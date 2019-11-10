@@ -11,8 +11,8 @@ defmodule RustlerTest.Mixfile do
       compilers: [:rustler] ++ Mix.compilers(),
       rustler_crates: [
         binary_example: [mode: :debug],
-        rustler_test: [mode: :debug],
-        deprecated_macros: [mode: :debug]
+        deprecated_macros: [mode: :debug],
+        rustler_test: [mode: :debug]
       ],
       deps: deps()
     ]

@@ -81,4 +81,8 @@ defmodule RustlerTest do
   def term_with_tuple_error(), do: err()
 
   def nif_attrs_can_rename(), do: err()
+
+  # Serde tests
+  def serde_test(_, _, _), do: err()
+  def transcode(_), do: err()
 end

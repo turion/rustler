@@ -56,12 +56,12 @@ pub use crate::env::{Env, OwnedEnv};
 pub mod thread;
 pub use crate::thread::{spawn, JobSpawner, ThreadSpawner};
 
+pub mod serde;
+pub use crate::serde::{from_term, to_term};
+
 pub mod error;
 pub mod export;
 pub use crate::error::Error;
-
-pub mod r#return;
-pub use crate::r#return::Return;
 
 #[doc(hidden)]
 mod nif;

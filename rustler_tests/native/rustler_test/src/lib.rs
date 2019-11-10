@@ -10,6 +10,7 @@ mod test_nif_attrs;
 mod test_primitives;
 mod test_range;
 mod test_resource;
+mod test_serde;
 mod test_term;
 mod test_thread;
 
@@ -72,7 +73,9 @@ rustler::init!(
         test_error::raise_term_with_atom_error,
         test_error::term_with_tuple_error,
         test_nif_attrs::can_rename,
-        test_codegen::reserved_keywords::reserved_keywords_type_echo
+        test_codegen::reserved_keywords::reserved_keywords_type_echo,
+        test_serde::serde_test,
+        test_serde::transcode
     ],
     load = load
 );

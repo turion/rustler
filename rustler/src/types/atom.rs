@@ -2,7 +2,9 @@ use crate::wrapper::atom;
 use crate::wrapper::NIF_TERM;
 use crate::{Decoder, Encoder, Env, Error, NifResult, Term};
 
-// Atoms are a special case of a term. They can be stored and used on all envs regardless of where
+// Atoms are a special case of a term.
+//
+// Atoms can be stored and used on all envs regardless of where
 // it lives and when it is created.
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Atom {
