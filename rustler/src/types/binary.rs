@@ -37,6 +37,13 @@ impl<'a> Decoder<'a> for OwnedBinary {
     }
 }
 
+#[cfg(feature = "unstable")]
+impl<'a> Encoder for OwnedBinary {
+    fn encode(&self, env: Env<'a>) -> Term<'a> {
+        self.release(env)
+    }
+}
+
 impl<'a> OwnedBinary {
     pub unsafe fn from_raw(inner: ErlNifBinary) -> OwnedBinary {
         OwnedBinary {
