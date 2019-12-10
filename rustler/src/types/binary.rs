@@ -29,6 +29,14 @@ impl TryFrom<&[u8]> for OwnedBinary {
     }
 }
 
+#[cfg(feature = "unstable")]
+impl<'a> Decoder<'a> for OwnedBinary {
+    fn decode(term: Term<'a>) -> Result<Self, Error> {
+        let binary = Binary::from_term(term).ok().unwrap();
+        OwnedBinary::from_unowned(&binary).ok_or(Error::BadArg)
+    }
+}
+
 impl<'a> OwnedBinary {
     pub unsafe fn from_raw(inner: ErlNifBinary) -> OwnedBinary {
         OwnedBinary {
