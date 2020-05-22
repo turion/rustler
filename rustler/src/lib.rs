@@ -22,8 +22,11 @@
 //! For more information about this, see [the documentation for
 //! rustler_mix](https://hexdocs.pm/rustler/basics.html).
 
-#[macro_use(enif_snprintf)]
-extern crate rustler_sys;
+#[cfg(not(feature = "mock"))]
+use rustler_sys;
+
+#[cfg(feature = "mock")]
+use rustler_mock_rt as rustler_sys;
 
 #[doc(hidden)]
 pub mod wrapper;
