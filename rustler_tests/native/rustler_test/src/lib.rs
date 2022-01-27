@@ -58,6 +58,8 @@ rustler::init!(
         test_codegen::generic_tuple_echo_usize,
         test_codegen::generic_tuple_echo_str,
         test_codegen::generic_tuple2_echo,
+        test_codegen::atom_tuple_echo,
+        test_codegen::generic_atom_tuple_echo,
         test_codegen::record_echo,
         test_codegen::generic_record_echo,
         test_codegen::map_echo,

@@ -91,6 +91,44 @@ defmodule RustlerTest.CodegenTest do
     end
   end
 
+  describe "atom tuple" do
+    test "transcoder" do
+      value = {:atom_tuple, 1, true}
+      assert value == RustlerTest.atom_tuple_echo(value)
+    end
+
+    test "with invalid tuple" do
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on AtomTuple\"", fn ->
+        RustlerTest.atom_tuple_echo({:atom_tuple, "invalid", 2})
+      end
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on AtomTuple\"", fn ->
+        RustlerTest.atom_tuple_echo({:wrong_identifier, 2, "oh noez"})
+      end
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on AtomTuple\"", fn ->
+        RustlerTest.atom_tuple_echo(:invalid)
+      end
+    end
+  end
+
+  describe "generic atom tuple" do
+    test "transcoder" do
+      value = {:generic_atom_tuple, 1, true}
+      assert value == RustlerTest.generic_atom_tuple_echo(value)
+    end
+
+    test "with invalid tuple" do
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on GenericAtomTuple\"", fn ->
+        RustlerTest.generic_atom_tuple_echo({:generic_atom_tuple, "not an int", false})
+      end
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on GenericAtomTuple\"", fn ->
+        RustlerTest.generic_atom_tuple_echo({:wrong_ident, 23, true})
+      end
+      assert_raise ErlangError, "Erlang error: \"Could not decode field lhs on GenericAtomTuple\"", fn ->
+        RustlerTest.generic_atom_tuple_echo(:invalid)
+      end
+    end
+  end
+
   describe "map" do
     test "transcoder" do
       value = %{lhs: 1, rhs: 2}

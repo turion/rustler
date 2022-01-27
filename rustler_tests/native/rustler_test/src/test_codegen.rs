@@ -1,5 +1,5 @@
 use rustler::types::truthy::Truthy;
-use rustler::{NifException, NifMap, NifRecord, NifStruct, NifTuple, NifUnitEnum, NifUntaggedEnum};
+use rustler::{NifException, NifMap, NifRecord, NifStruct, NifTuple, NifAtomTuple, NifUnitEnum, NifUntaggedEnum};
 
 #[derive(NifTuple)]
 pub struct AddTuple {
@@ -40,6 +40,28 @@ pub fn generic_tuple2_echo(
     generic_tuple: GenericTuple2<usize, i64, &str>,
 ) -> GenericTuple2<usize, i64, &str> {
     generic_tuple
+}
+
+#[derive(NifAtomTuple)]
+pub struct AtomTuple {
+    lhs: i32,
+    rhs: bool, // FIXME Shame, I can't use a &str?
+}
+
+#[rustler::nif]
+pub fn atom_tuple_echo(tuple: AtomTuple) -> AtomTuple {
+    tuple
+}
+
+#[derive(NifAtomTuple)]
+pub struct GenericAtomTuple<T> {
+    lhs: i32,
+    rhs: T,
+}
+
+#[rustler::nif]
+pub fn generic_atom_tuple_echo(tuple: GenericAtomTuple<&str>) -> GenericAtomTuple<&str> {
+    tuple
 }
 
 #[derive(NifRecord)]

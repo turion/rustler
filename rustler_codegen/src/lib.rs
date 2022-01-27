@@ -2,6 +2,7 @@
 
 use proc_macro::TokenStream;
 
+mod atom_tuple;
 mod context;
 mod ex_struct;
 mod init;
@@ -196,6 +197,37 @@ pub fn nif_tuple(input: TokenStream) -> TokenStream {
 pub fn nif_record(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     record::transcoder_decorator(&ast).into()
+}
+
+/// Implementation of the `NifAtomTuple` macro that lets the user annotate a struct
+/// that will generate a tuple when encoded
+///
+
+// FIXME This is yet to be implemented
+/// ```ignore
+/// #[derive(NifAtomTuple)]
+/// enum AtomTuple {
+///    FooBar(i32, &str),
+///    Baz { field: bool },
+/// }
+/// ```
+///
+/// An example usage in elixir would look like the following.
+///
+/// ```elixir
+/// test "unit enum transcoder" do
+///   assert {:foo_bar, 23, "hi"} == RustlerTest.atom_tuple_echo({:foo_bar, 23, "hi"})
+///   assert {:baz, true} == RustlerTest.atom_tuple_echo({:baz, true})
+///   assert :invalid_variant == RustlerTest.atom_tuple_echo(:somethingelse)
+/// end
+/// ```
+///
+/// Note that the `:invalid_variant` atom is returned if the user tries to encode something
+/// that isn't the desired tuple.
+#[proc_macro_derive(NifAtomTuple, attributes(rustler))]
+pub fn nif_atom_tuple(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    atom_tuple::transcoder_decorator(&ast).into()
 }
 
 /// Implementation of the `NifUnitEnum` macro that lets the user annotate an enum with a unit type

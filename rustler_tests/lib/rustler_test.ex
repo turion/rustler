@@ -62,6 +62,8 @@ defmodule RustlerTest do
   def generic_tuple_echo_usize(_), do: err()
   def generic_tuple_echo_str(_), do: err()
   def generic_tuple2_echo(_), do: err()
+  def atom_tuple_echo(_), do: err()
+  def generic_atom_tuple_echo(_), do: err()
   def record_echo(_), do: err()
   def generic_record_echo(_), do: err()
   def map_echo(_), do: err()
