@@ -63,6 +63,21 @@ defmodule RustlerTest.CodegenTest do
     end
   end
 
+  describe "map_lifetime" do
+    test "transcoder" do
+      value = %{lhs: "hi", rhs: 2}
+      assert value == RustlerTest.map_lifetime_echo(value)
+    end
+
+    test "with invalid map" do
+      value = %{lhs: :invalid, rhs: 2}
+
+      assert_raise ErlangError, "Erlang error: \"Could not decode field :lhs on %{}\"", fn ->
+        assert value == RustlerTest.map_lifetime_echo(value)
+      end
+    end
+  end
+
   describe "struct" do
     test "transcoder" do
       value = %AddStruct{lhs: 45, rhs: 123}
