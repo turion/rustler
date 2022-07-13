@@ -49,7 +49,7 @@ pub fn transcoder_decorator(ast: &syn::DeriveInput) -> TokenStream {
 }
 
 fn gen_decoder(ctx: &Context, fields: &[&Field], atoms_module_name: &Ident) -> TokenStream {
-    let struct_type = ctx.ident_with_lifetime();
+    let struct_type = ctx.ident_with_decoder_lifetime();
     let struct_name = ctx.ident;
     let lifetimes = &ctx.lifetimes;
 
@@ -68,7 +68,7 @@ fn gen_decoder(ctx: &Context, fields: &[&Field], atoms_module_name: &Ident) -> T
 
             let assignment = quote_spanned! { field.span() =>
                 let field = #atom_fun();
-                let #variable = match ::rustler::Decoder::decode(term.map_get(::rustler::Encoder::encode(field, env))?) {
+                let #variable = match ::rustler::Decoder::decode(term.map_get(::rustler::Encoder::encode(&field, env))?) {
                     Err(_) => Err(::rustler::Error::RaiseTerm(Box::new(format!(
                                     "Could not decode field :{:?} on %{{}}",
                                     field
@@ -85,7 +85,7 @@ fn gen_decoder(ctx: &Context, fields: &[&Field], atoms_module_name: &Ident) -> T
         .unzip();
 
     let gen = quote! {
-        impl<'__rustler_Decoder #(, #lifetimes : '__rustler_Decoder)*> ::rustler::Decoder<'__rustler_Decoder> for #struct_type {
+        impl<'__rustler_Decoder> ::rustler::Decoder<'__rustler_Decoder> for #struct_type {
             fn decode(term: ::rustler::Term<'__rustler_Decoder>) -> ::rustler::NifResult<Self> {
                 use #atoms_module_name::*;
 
