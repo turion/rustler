@@ -95,7 +95,8 @@ rustler::init!(
         test_tuple::maybe_add_one_to_tuple,
         test_tuple::add_i32_from_tuple,
         test_tuple::greeting_person_from_tuple,
-        test_codegen::reserved_keywords::reserved_keywords_type_echo
+        test_codegen::reserved_keywords::reserved_keywords_type_echo,
+        test_codegen::enum_struct::enum_struct_echo,
     ],
     load = load
 );

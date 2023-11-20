@@ -13,6 +13,7 @@ mod tagged_enum;
 mod tuple;
 mod unit_enum;
 mod untagged_enum;
+mod enum_struct;
 
 #[derive(Debug)]
 enum RustlerAttr {
@@ -133,6 +134,49 @@ pub fn nif(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn nif_struct(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     ex_struct::transcoder_decorator(&ast, false).into()
+}
+
+/// Derives implementations for the `Encoder` and `Decoder` traits
+/// which convert between an Elixir struct and a Rust enum, where all variants are named.
+///
+/// For example, annotate the following Rust struct:
+///
+/// ```ignore
+/// #[derive(Debug, NifEnumStruct)]
+/// enum Expression {
+///     #[module = "AddStruct"]
+///     AddStruct {
+///         lhs: i32,
+///         rhs: i32,
+///     },
+///     #[module = "MulStruct"]
+///     MulStruct {
+///         lhs: i32,
+///         rhs: i32,
+///     },
+/// }
+/// ```
+///
+/// Write the following corresponding Elixir struct definition:
+///
+/// ```elixir
+/// defmodule Expression do
+///   defmodule AddStruct do
+///     defstruct lhs: 0, rhs: 0
+///   end
+///   defmodule MulStruct do
+///     defstruct lhs: 0, rhs: 0
+///   end
+/// end
+/// ```
+///
+/// Then the traits `Encoder` and `Decoder` are derived automatically for your Rust enum
+/// such that you can use the Elixir struct definition for it.
+
+#[proc_macro_derive(NifEnumStruct, attributes(module, rustler))]
+pub fn nif_enum_struct(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    enum_struct::transcoder_decorator(&ast, false).into()
 }
 
 /// Derives implementations for the `Encoder` and `Decoder` traits

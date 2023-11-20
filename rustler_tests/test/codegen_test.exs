@@ -21,6 +21,20 @@ defmodule TupleStructRecord do
   defrecord :tuplestruct, a: 1, b: 2, c: 3
 end
 
+defmodule EnumStruct do
+  defmodule Foo do
+    defstruct [:foo1, :foo2]
+  end
+
+  defmodule Bar do
+    defstruct [:bar]
+  end
+
+  defmodule Baz do
+    defstruct []
+  end
+end
+
 defmodule RustlerTest.CodegenTest do
   use ExUnit.Case, async: true
 
@@ -433,5 +447,13 @@ defmodule RustlerTest.CodegenTest do
 
     assert {1} == RustlerTest.reserved_keywords_type_echo({1})
     assert {:record, 1} == RustlerTest.reserved_keywords_type_echo({:record, 1})
+  end
+
+  test "struct enum" do
+    assert %Foo{foo1: 23, foo2: "foo2"} ==
+             RustlerTest.enum_struct_echo(%Foo{foo1: 23, foo2: "foo2"})
+
+    assert %Bar{bar1: true} == %Bar{bar1: true}
+    assert %Baz{} == %Baz{}
   end
 end

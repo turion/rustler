@@ -126,7 +126,7 @@ impl<'a> Context<'a> {
         )
     }
 
-    fn remove_raw(ident_str: &str) -> &str {
+    pub fn remove_raw(ident_str: &str) -> &str {
         ident_str
             .split("r#")
             .last()
@@ -139,7 +139,7 @@ impl<'a> Context<'a> {
             .any(|attr| matches!(attr, RustlerAttr::Encode | RustlerAttr::Decode))
     }
 
-    fn get_rustler_attrs(attr: &syn::Attribute) -> Vec<RustlerAttr> {
+    pub fn get_rustler_attrs(attr: &syn::Attribute) -> Vec<RustlerAttr> {
         attr.path()
             .segments
             .iter()

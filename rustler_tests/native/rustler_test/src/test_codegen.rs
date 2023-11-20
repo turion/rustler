@@ -262,3 +262,43 @@ pub mod reserved_keywords {
         reserved
     }
 }
+
+pub mod enum_struct {
+    use rustler::NifEnumStruct;
+
+    #[derive(NifEnumStruct)]
+    pub enum EnumStruct {
+        #[module = "EnumStruct.Foo"]
+        Foo { foo1: i32, foo2: String, some_field: String },
+        #[module = "EnumStruct.Bar"]
+        Bar { bar: bool, some_field: f64 },
+        #[module = "EnumStruct.Baz"]
+        Baz {}
+    }
+
+    // impl Decoder for EnumStruct {
+        // fn decode(term) -> NifResult<EnumStruct> {
+            // let struct_module = term.map_get("__struct__");
+            // match struct_module {
+                // atom_foo => {
+                    // let foo1 = term.map_get("foo1")
+                    // let foo2 = term.map_get("foo2")
+                    // let some_field = term.map_get("some_field")
+                    // Foo {
+                    //     foo1,
+                    //     foo2,
+                    //     some_field,
+                    // }
+                // }
+                // atom_bar =>
+            // }
+        // }
+    // }
+    //
+
+
+    #[rustler::nif]
+    pub fn enum_struct_echo(value: EnumStruct) -> EnumStruct {
+        value
+    }
+}

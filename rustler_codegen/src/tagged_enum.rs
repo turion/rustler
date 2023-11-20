@@ -228,7 +228,7 @@ fn gen_unnamed_decoder<'a>(
     }
 }
 
-fn gen_named_decoder(
+pub fn gen_named_decoder(
     enum_name: &Ident,
     fields: &FieldsNamed,
     variant_ident: &Ident,
