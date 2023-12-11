@@ -13,7 +13,7 @@ mod tagged_enum;
 mod tuple;
 mod unit_enum;
 mod untagged_enum;
-mod enum_struct;
+// mod enum_struct;
 
 #[derive(Debug)]
 enum RustlerAttr {
@@ -173,11 +173,11 @@ pub fn nif_struct(input: TokenStream) -> TokenStream {
 /// Then the traits `Encoder` and `Decoder` are derived automatically for your Rust enum
 /// such that you can use the Elixir struct definition for it.
 
-#[proc_macro_derive(NifEnumStruct, attributes(module, rustler))]
-pub fn nif_enum_struct(input: TokenStream) -> TokenStream {
-    let ast = syn::parse(input).unwrap();
-    enum_struct::transcoder_decorator(&ast, false).into()
-}
+// #[proc_macro_derive(NifEnumStruct, attributes(module, rustler))]
+// pub fn nif_enum_struct(input: TokenStream) -> TokenStream {
+//     let ast = syn::parse(input).unwrap();
+//     // enum_struct::transcoder_decorator(&ast, false).into()
+// }
 
 /// Derives implementations for the `Encoder` and `Decoder` traits
 /// which convert between an Elixir exception and a Rust struct.

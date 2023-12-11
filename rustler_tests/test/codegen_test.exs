@@ -23,11 +23,11 @@ end
 
 defmodule EnumStruct do
   defmodule Foo do
-    defstruct [:foo1, :foo2]
+    defstruct [:foo1, :foo2, :some_field]
   end
 
   defmodule Bar do
-    defstruct [:bar]
+    defstruct [:bar, :some_field]
   end
 
   defmodule Baz do
@@ -450,10 +450,10 @@ defmodule RustlerTest.CodegenTest do
   end
 
   test "struct enum" do
-    assert %Foo{foo1: 23, foo2: "foo2"} ==
-             RustlerTest.enum_struct_echo(%Foo{foo1: 23, foo2: "foo2"})
+    assert %EnumStruct.Foo{foo1: 23, foo2: "foo2", some_field: "hi"} ==
+             RustlerTest.enum_struct_echo(%EnumStruct.Foo{foo1: 23, foo2: "foo2", some_field: "hi"})
 
-    assert %Bar{bar1: true} == %Bar{bar1: true}
-    assert %Baz{} == %Baz{}
+    assert %EnumStruct.Bar{bar: true, some_field: 42.0} == RustlerTest.enum_struct_echo(%EnumStruct.Bar{bar: true, some_field: 42.0})
+    assert %EnumStruct.Baz{} == RustlerTest.enum_struct_echo(%EnumStruct.Baz{})
   end
 end

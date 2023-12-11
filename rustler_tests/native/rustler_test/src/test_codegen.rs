@@ -264,38 +264,118 @@ pub mod reserved_keywords {
 }
 
 pub mod enum_struct {
-    use rustler::NifEnumStruct;
+    // use rustler::NifEnumStruct;
 
-    #[derive(NifEnumStruct)]
+    // #[derive(NifEnumStruct)]
     pub enum EnumStruct {
-        #[module = "EnumStruct.Foo"]
-        Foo { foo1: i32, foo2: String, some_field: String },
-        #[module = "EnumStruct.Bar"]
-        Bar { bar: bool, some_field: f64 },
-        #[module = "EnumStruct.Baz"]
-        Baz {}
+        // #[module = "EnumStruct.Foo"]
+        Foo {
+            foo1: i32,
+            foo2: String,
+            some_field: String,
+        },
+        // #[module = "EnumStruct.Bar"]
+        Bar {
+            bar: bool,
+            some_field: f64,
+        },
+        // #[module = "EnumStruct.Baz"]
+        Baz {},
     }
 
-    // impl Decoder for EnumStruct {
-        // fn decode(term) -> NifResult<EnumStruct> {
-            // let struct_module = term.map_get("__struct__");
-            // match struct_module {
-                // atom_foo => {
-                    // let foo1 = term.map_get("foo1")
-                    // let foo2 = term.map_get("foo2")
-                    // let some_field = term.map_get("some_field")
-                    // Foo {
-                    //     foo1,
-                    //     foo2,
-                    //     some_field,
-                    // }
-                // }
-                // atom_bar =>
-            // }
-        // }
-    // }
-    //
+    mod atoms {
+        pub mod foo {
+            rustler::atoms! {
+                __struct__ = "Elixir.EnumStruct.Foo",
+                foo1,
+                foo2,
+                some_field,
+            }
+        }
+        pub mod bar {
+            rustler::atoms! {
+                __struct__ = "Elixir.EnumStruct.Bar",
+                bar,
+                some_field,
+            }
+        }
+        pub mod baz {
+            rustler::atoms! {
+                __struct__ = "Elixir.EnumStruct.Baz",
+            }
+        }
+    }
 
+    impl<'a> rustler::Decoder<'a> for EnumStruct {
+        fn decode(term: rustler::Term<'a>) -> rustler::NifResult<EnumStruct> {
+            let struct_module: rustler::types::atom::Atom =
+                term.map_get(rustler::types::atom::__struct__())?.decode()?;
+            if struct_module == atoms::foo::__struct__() {
+                let foo1 = term.map_get(atoms::foo::foo1())?.decode()?;
+                let foo2 = term.map_get(atoms::foo::foo2())?.decode()?;
+                let some_field = term.map_get(atoms::foo::some_field())?.decode()?;
+                return Ok(EnumStruct::Foo {
+                    foo1,
+                    foo2,
+                    some_field,
+                });
+            }
+            if struct_module == atoms::bar::__struct__() {
+                let bar = term.map_get(atoms::bar::bar())?.decode()?;
+                let some_field = term.map_get(atoms::bar::some_field())?.decode()?;
+                return Ok(EnumStruct::Bar { bar, some_field });
+            }
+            if struct_module == atoms::baz::__struct__() {
+                return Ok(EnumStruct::Baz {});
+            }
+            Err(rustler::Error::RaiseAtom("No known variant for enum"))
+        }
+    }
+
+    impl rustler::Encoder for EnumStruct {
+        fn encode<'a>(&self, env: rustler::Env<'a>) -> rustler::Term<'a> {
+            match self {
+                EnumStruct::Foo {
+                    foo1,
+                    foo2,
+                    some_field,
+                } => ::rustler::Term::map_from_term_arrays(
+                    env,
+                    &[
+                        rustler::types::atom::__struct__().encode(env),
+                        atoms::foo::foo1().encode(env),
+                        atoms::foo::foo2().encode(env),
+                        atoms::foo::some_field().encode(env),
+                    ],
+                    &[
+                        atoms::foo::__struct__().encode(env),
+                        foo1.encode(env),
+                        foo2.encode(env),
+                        some_field.encode(env),
+                    ],
+                ),
+                EnumStruct::Bar { bar, some_field } => ::rustler::Term::map_from_term_arrays(
+                    env,
+                    &[
+                        rustler::types::atom::__struct__().encode(env),
+                        atoms::bar::bar().encode(env),
+                        atoms::bar::some_field().encode(env),
+                    ],
+                    &[
+                        atoms::bar::__struct__().encode(env),
+                        bar.encode(env),
+                        some_field.encode(env),
+                    ],
+                ),
+                EnumStruct::Baz {} => ::rustler::Term::map_from_term_arrays(
+                    env,
+                    &[rustler::types::atom::__struct__().encode(env)],
+                    &[atoms::baz::__struct__().encode(env)],
+                ),
+            }
+            .expect("encode an enumstruct")
+        }
+    }
 
     #[rustler::nif]
     pub fn enum_struct_echo(value: EnumStruct) -> EnumStruct {
