@@ -264,23 +264,25 @@ pub mod reserved_keywords {
 }
 
 pub mod enum_struct {
-    // use rustler::NifEnumStruct;
+    use rustler::NifEnumStruct;
 
-    // #[derive(NifEnumStruct)]
+    #[derive(NifEnumStruct)]
     pub enum EnumStruct {
-        // #[module = "EnumStruct.Foo"]
+        #[module = "EnumStruct.Foo"]
         Foo {
             foo1: i32,
             foo2: String,
             some_field: String,
         },
-        // #[module = "EnumStruct.Bar"]
+        #[module = "EnumStruct.Bar"]
         Bar {
             bar: bool,
             some_field: f64,
         },
-        // #[module = "EnumStruct.Baz"]
+        #[module = "EnumStruct.Baz"]
         Baz {},
+        // #[module = "EnumStruct.Blub"]
+        Blub(),
     }
 
     mod atoms {

@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 
 use syn::{self, spanned::Spanned, Field, Ident};
-use syn::{Fields, Variant};
+use syn::{Fields, Fields::Named, Variant};
 
 use super::context::Context;
 use super::RustlerAttr;
@@ -12,59 +12,72 @@ pub fn transcoder_decorator(ast: &syn::DeriveInput, _add_exception: bool) -> Tok
     let ctx = Context::from_ast(ast);
 
     let expect_message = "NifEnumStruct can only be used with structs or enums";
-    let decoders: Vec<TokenStream> = ctx
+    // let decoders: Vec<TokenStream> = ctx
+    //     .variants
+    //     .as_ref()
+    //     .expect(expect_message)
+    //     .into_iter()
+    //     .map(|variant| {
+    //         super::tagged_enum::gen_named_decoder(ctx.ident, struct_fields(variant), &variant.ident)
+    //     })
+    //     .collect();
+    // let decoder_body = quote! {
+    //     #(#decoders)*
+    // };
+
+    let atom_modules = ctx
         .variants
         .as_ref()
         .expect(expect_message)
         .into_iter()
-        .map(|variant| super::tagged_enum::gen_named_decoder(ctx.ident, struct_fields(variant), &variant.ident))
-        .collect();
-    let decoder_body = quote! {
-        #(#decoders)*
-    };
+        .map(|variant| atoms_module_from_variant(ctx.ident, variant));
 
-    // let elixir_module = get_module_from_variant(variant);
+    // // let elixir_module = get_module_from_variant(variant);
 
-    let field_atoms = field_atoms(&struct_fields);
+    // let field_atoms = field_atoms(&struct_fields);
 
-    let atom_defs = quote! {
-        rustler::atoms! {
-            atom_struct = "__struct__",
-            atom_module = #elixir_module,
-            #(#field_atoms)*
+    // let atom_defs = quote! {
+    //     rustler::atoms! {
+    //         atom_module = #elixir_module,
+    //         #(#field_atoms)*
+    //     }
+    // };
+
+    // let atoms_module_name = Ident::new(
+    //     &format!("RUSTLER_ATOMS_{}_{}", ctx.ident, variant.ident),
+    //     Span::call_site(),
+    // );
+
+    // let decoder = if ctx.decode() {
+    //     gen_decoder(&ctx, &struct_fields, &atoms_module_name)
+    // } else {
+    //     quote! {}
+    // };
+
+    // let encoder = if ctx.encode() {
+    //     gen_encoder(&ctx, &struct_fields, &atoms_module_name, false)
+    // } else {
+    //     quote! {}
+    // };
+
+    // let gen = quote! {
+    //     #[allow(non_snake_case)]
+    //     mod #atoms_module_name {
+    //         #atom_defs
+    //     }
+
+    //     #decoder
+
+    //     #[allow(clippy::needless_borrow)]
+    //     #encoder
+    // };
+
+    // gen
+    quote! {
+        mod atoms {
+            #(#atom_modules)*
         }
-    };
-
-    let atoms_module_name = Ident::new(
-        &format!("RUSTLER_ATOMS_{}_{}", ctx.ident, variant.ident),
-        Span::call_site(),
-    );
-
-    let decoder = if ctx.decode() {
-        gen_decoder(&ctx, &struct_fields, &atoms_module_name)
-    } else {
-        quote! {}
-    };
-
-    let encoder = if ctx.encode() {
-        gen_encoder(&ctx, &struct_fields, &atoms_module_name, false)
-    } else {
-        quote! {}
-    };
-
-    let gen = quote! {
-        #[allow(non_snake_case)]
-        mod #atoms_module_name {
-            #atom_defs
-        }
-
-        #decoder
-
-        #[allow(clippy::needless_borrow)]
-        #encoder
-    };
-
-    gen
+    }
 }
 
 fn gen_decoder(ctx: &Context, fields: &[&Field], atoms_module_name: &Ident) -> TokenStream {
@@ -119,7 +132,7 @@ fn gen_decoder(ctx: &Context, fields: &[&Field], atoms_module_name: &Ident) -> T
                     }
                 }
 
-            let module: ::rustler::types::atom::Atom = term.map_get(atom_struct())?.decode()?;
+            let module: ::rustler::types::atom::Atom = term.map_get(rustler::types::atom::__struct__())?.decode()?;
             if module != atom_module() {
                 return Err(::rustler::Error::RaiseAtom("invalid_struct"));
             }
@@ -137,7 +150,8 @@ fn gen_encoder(
     atoms_module_name: &Ident,
     add_exception: bool,
 ) -> TokenStream {
-    let mut keys = vec![quote! { ::rustler::Encoder::encode(&atom_struct(), env) }];
+    let mut keys =
+        vec![quote! { ::rustler::Encoder::encode(&rustler::types::atom::__struct__(), env) }];
     let mut values = vec![quote! { ::rustler::Encoder::encode(&atom_module(), env) }];
     if add_exception {
         keys.push(quote! { ::rustler::Encoder::encode(&atom_exception(), env) });
@@ -167,7 +181,7 @@ fn gen_encoder(
 }
 
 // FIXME reduce duplication
-fn get_module_from_variant(variant: &Variant) -> String {
+fn get_module_from_variant(enum_name: &Ident, variant: &Variant) -> String {
     variant
         .attrs
         .iter()
@@ -176,7 +190,38 @@ fn get_module_from_variant(variant: &Variant) -> String {
             RustlerAttr::Module(ref module) => Some(module.clone()),
             _ => None,
         })
-        .expect("NifStruct requires a 'module' attribute on every variant")
+        .expect(&format!(
+            "NifEnumStruct requires a 'module' attribute on every variant, but the {variant_ident} variant from {enum_name} didn't have one.",
+            variant_ident = variant.ident
+        ))
+}
+
+fn atoms_module_from_variant(enum_name: &Ident, variant: &Variant) -> TokenStream {
+    let atom_module_name = variant.ident.to_string().to_lowercase();
+    let elixir_module = get_module_from_variant(enum_name, variant);
+
+    let fields = match &variant.fields {
+        Named(fields_named) => fields_named.named.iter().map(|field| {
+            field
+                .ident
+                .as_ref()
+                .expect("NifEnumStruct expected field to have an identifier, but it didn't.")
+        }),
+        _ => panic!("NifEnumStruct requires all enum variants to be in struct syntax"),
+    };
+
+    let code = quote! {
+        pub mod #atom_module_name {
+            rustler::atoms! {
+                __struct__ = #elixir_module,
+                #(#fields),*
+
+
+            }
+        }
+    };
+
+    code
 }
 
 pub fn field_atoms(fields: &[&Field]) -> Vec<TokenStream> {
@@ -197,7 +242,7 @@ pub fn field_atoms(fields: &[&Field]) -> Vec<TokenStream> {
 }
 
 fn struct_fields(variant: &Variant) -> Vec<&Field> {
-    match variant.fields {
+    match &variant.fields {
         Fields::Named(named_fields) => named_fields.named.iter().collect(),
         _ => panic!("When using NifEnumStruct, all variants must be named (struct syntax)"),
     }
